@@ -50,13 +50,19 @@ object List {
 	}
 	maxp(tail(lst), head(lst))
     }
-
-    def maxMin(lst:List[Double]):(Double,Double) = {
-    	def maxMinP(lst:List[Double], mm:(Double,Double)):(Double,Double) = lst match {
+  def min(lst:List[Long]):Long = {
+    def minP(lst:List[Long], min:Long):Long = lst match{
+      case Nil => min
+      case Const(h,t) => minP(t, if(h < min) h else min)
+    }
+    minP(tail(lst), head(lst))
+  }
+    def minMax(lst:List[Double]):(Double,Double) = {
+    	def minMaxP(lst:List[Double], mm:(Double,Double)):(Double,Double) = lst match {
 	    case Nil => mm
-	    case Const(h,t) => maxMinP(t, (if (h < mm._1) h else mm._1, if (h > mm._2) h else mm._2))
+	    case Const(h,t) => minMaxP(t, (if (h < mm._1) h else mm._1, if (h > mm._2) h else mm._2))
 	}
-	maxMinP(tail(lst), (head(lst), head(lst)))
+      minMaxP(tail(lst), (head(lst), head(lst)))
     }
     
     def apply[A](as: A*): List[A] = {

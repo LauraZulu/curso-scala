@@ -1,4 +1,4 @@
-package example
+package functions
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -30,5 +30,5 @@ class funciones_test extends AnyFlatSpec with Matchers{
   "El calculo de la funcion f de 2" should "1" in {
   FuncionesScala.f(2) shouldEqual 1}
   "El calculo de la funcion factorialTail de 3" should "3" in {
-    FuncionesScala.factorialTail(3,1) shouldEqual 6}
+    FuncionesScala.factorialTail(3) shouldEqual 6}
 }
