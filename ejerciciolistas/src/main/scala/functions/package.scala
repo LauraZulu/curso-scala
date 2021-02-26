@@ -1,5 +1,7 @@
 package functions
 
+import scala.annotation.tailrec
+
 object FuncionesScala {
   // Funcion literal área del triangulo
   val areaTrianguloRectangulo = (a:Int, b:Int) => {
@@ -70,6 +72,7 @@ object FuncionesScala {
 
   // Funcion con recursividad de cola
   def factorialTail(n:Int):Int ={
+    @tailrec
     def f(n:Int, acum:Int): Int ={
       if(n == 0) acum
       else if(n == 1) acum
