@@ -23,7 +23,7 @@ class List_test extends AnyFlatSpec with Matchers{
   "append two lists" should "(1,2,3,4,2,3,4)" in {
     List.append((List(1,2,3,4)),(List(2,3,4))) shouldEqual (List(1,2,3,4,2,3,4))}
   "init from a list" should "(1,2)" in {
-    List.init(2,List(1,2,3,4)) shouldEqual (List(1,2))}
+    List.init(List(1,2,3,4)) shouldEqual (List(1,2,3))}
   "drop from a list" should "(3,4)" in {
     List.drop(2,List(1,2,3,4)) shouldEqual (List(3,4))}
   "split from a list" should "(List(1,2),List(3,4))" in {
