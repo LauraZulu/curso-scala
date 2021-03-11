@@ -1,7 +1,6 @@
 package co.s4n.inmutable.list
 
 import scala.annotation.tailrec
-import scala.collection.immutable.Nil.combinations
 
 sealed trait List[+A]
   case object Nil extends List[Nothing]
@@ -13,8 +12,6 @@ object List {
     case Nil => 0
     case Const(h, t) => 1 + length(t)
   }
-
-  def lengthL[A](lst: List[A]): Int = foldLeft(lst, 0)((x, y) => 1 + x)
 
   def tail[A](lst: List[A]): List[A] = lst match {
     case Nil => Nil
@@ -185,120 +182,118 @@ object List {
       case Const(h, t) => lastItem(t, Const(h, acum))
     }
 
-    lastItem(lst, Nil)
-  }
+    def intersperse[A](elem: A, lst: List[A]): List[A] = {
+      @tailrec
+      def addIntersperse[A](elem: A, lst: List[A], acum: List[A]): List[A] = lst match {
+        case Nil => Nil
+        case Const(h, Nil) => addEndOther(acum, h)
+        case Const(h, t) => addIntersperse(elem, t, addEndOther(addEndOther(acum, h), elem))
+      }
 
-  def intersperse[A](elem: A, lst: List[A]): List[A] = {
+      addIntersperse(elem, lst, Nil)
+    }
+
+    def concat[A](lst1: List[A], lst2: List[A]): List[A] = (lst1, lst2) match {
+      case (Nil, Nil) => Nil
+      case (lst1, Nil) => lst1
+      case (Nil, lst2) => lst2
+      case (Const(h, t), lst2) => Const(h, append(t, lst2))
+    }
+
+    // Currying arguments separated
     @tailrec
-    def addIntersperse[A](elem: A, lst: List[A], acum: List[A]): List[A] = lst match {
+    def dropWhile[A](lst: List[A])(f: A => Boolean): List[A] = lst match {
+      // case Nil => Nil
+      case Const(h, t) if f(h) => dropWhile(t)(f)
+      case _ => lst
+    }
+
+    // HIGHER ORDER FUNCTIONS
+
+    def reduce(lst: List[Int], z: Int)(f: (Int, Int) => Int): Int = lst match {
+      case Nil => z
+      case Const(h, t) => f(h, reduce(t, z)(f))
+    }
+
+    def sumR(lst: List[Int]) = reduce(lst, 0)((x, y) => x + y)
+
+    def mulR(lst: List[Int]) = reduce(lst, 1)((x, y) => x * y)
+
+    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+      case Nil => z
+      case Const(h, t) => f(h, foldRight(t, z)(f))
+    }
+
+    @tailrec
+    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+      case Const(h, t) => foldLeft(t, f(z, h))(f)
+      case Nil => z
+    }
+
+    def sumL(lst: List[Int]) = foldLeft(lst, 0)(_ + _)
+
+    def prodL(lst: List[Int]) = foldLeft(lst, 1)(_ * _)
+
+    // For a generic list
+    def sumList(lst: List[Int]) = foldRight(lst, 0)((x, y) => x + y)
+
+    def mulList(lst: List[Int]) = foldRight(lst, 1)((x, y) => x * y)
+
+    def sumUno(lst: List[Int]): List[Int] = foldRight(lst, Nil: List[Int])((elem, lst) => Const(elem + 1, lst))
+
+    def mapGen[A, B](lst: List[A])(f: A => B): List[B] = lst match {
       case Nil => Nil
-      case Const(h, Nil) => addEndOther(acum, h)
-      case Const(h, t) => addIntersperse(elem, t, addEndOther(addEndOther(acum, h), elem))
+      case Const(h, t) => Const(f(h), mapGen(t)(f))
     }
 
-    addIntersperse(elem, lst, Nil)
-  }
+    def mapR[A, B](lst: List[A])(f: A => B): List[B] = foldRight(lst, Nil: List[B])((x, y) => Const(f(x), y))
 
-  def concat[A](lst1: List[A], lst2: List[A]): List[A] = (lst1, lst2) match {
-    case (Nil, Nil) => Nil
-    case (lst1, Nil) => lst1
-    case (Nil, lst2) => lst2
-    case (Const(h, t), lst2) => Const(h, append(t, lst2))
-  }
+    def lengthR[A](lst: List[A]): Int = foldRight(lst, 0)((x, y) => 1 + y)
 
-  // Currying arguments separated
-  @tailrec
-  def dropWhile[A](lst: List[A])(f: A => Boolean): List[A] = lst match {
-    // case Nil => Nil
-    case Const(h, t) if f(h) => dropWhile(t)(f)
-    case _ => lst
-  }
+    def andR(lst: List[Boolean]): Boolean = foldRight(lst, true)((x, y) => if (x && y) true else false)
 
-  // HIGHER ORDER FUNCTIONS
-
-  def reduce(lst: List[Int], z: Int)(f: (Int, Int) => Int): Int = lst match {
-    case Nil => z
-    case Const(h, t) => f(h, reduce(t, z)(f))
-  }
-
-  def sumR(lst: List[Int]) = reduce(lst, 0)((x, y) => x + y)
-
-  def mulR(lst: List[Int]) = reduce(lst, 1)((x, y) => x * y)
-
-  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-    case Nil => z
-    case Const(h, t) => f(h, foldRight(t, z)(f))
-  }
-
-  @tailrec
-  def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-    case Const(h, t) => foldLeft(t, f(z, h))(f)
-    case Nil => z
-  }
-
-  def sumL(lst: List[Int]) = foldLeft(lst, 0)(_ + _)
-
-  def prodL(lst: List[Int]) = foldLeft(lst, 1)(_ * _)
-
-  // For a generic list
-  def sumList(lst: List[Int]) = foldRight(lst, 0)((x, y) => x + y)
-
-  def mulList(lst: List[Int]) = foldRight(lst, 1)((x, y) => x * y)
-
-  def sumUno(lst: List[Int]): List[Int] = foldRight(lst, Nil: List[Int])((elem, lst) => Const(elem + 1, lst))
-
-  def mapGen[A, B](lst: List[A])(f: A => B): List[B] = lst match {
-    case Nil => Nil
-    case Const(h, t) => Const(f(h), mapGen(t)(f))
-  }
-
-  def mapR[A, B](lst: List[A])(f: A => B): List[B] = foldRight(lst, Nil: List[B])((x, y) => Const(f(x), y))
-
-  def lengthR[A](lst: List[A]): Int = foldRight(lst, 0)((x, y) => 1 + y)
-
-  def andR(lst: List[Boolean]): Boolean = foldRight(lst, true)((x, y) => if (x && y) true else false)
-
-  @tailrec
-  def takeWhile[A](lst: List[A])(p: A => Boolean): List[A] = lst match {
-    case Nil => lst
-    case Const(h, t) if p(h) => takeWhile(t)(p)
-  }
-
-  def takeWhileR[A](lst: List[A])(p: A => Boolean): List[A] = foldRight(lst, Nil: List[A])((x, y) => if (p(x)) Const(x, y) else Nil)
-
-  def dropWhileL[A](lst: List[A])(p: A => Boolean): List[A] = foldLeft(lst, (true: Boolean, Nil: List[A]))((x, y) => x match {
-    case (true, _) => if (p(y)) (true, x._2) else (false, addEndOther(x._2, y))
-    case (false, _) => if (p(y)) (false, addEndOther(x._2, y)) else (false, addEndOther(x._2, y))
-  })._2
-
-  def filterR[A](lst: List[A])(p: A => Boolean): List[A] = foldRight(lst, Nil: List[A])((x, y) => if (p(x)) Const(x, y) else y)
-
-  def unzipR[A, B](lst: List[(A, B)]): (List[A], List[B]) = foldRight(lst, (Nil: List[A], Nil: List[B]))((x, y) => (Const(x._1, y._1), Const(x._2, y._2)))
-
-  // Function zip with f defined
-  def unzipOther[A, B](lst: List[(A, B)]): (List[A], List[B]) = {
-    def f(x: (A, B), y: (List[A], List[B])): (List[A], List[B]) = {
-      (Const(x._1, y._1), Const(x._2, y._2))
+    @tailrec
+    def takeWhile[A](lst: List[A])(p: A => Boolean): List[A] = lst match {
+      case Nil => lst
+      case Const(h, t) if p(h) => takeWhile(t)(p)
     }
 
-    foldRight(lst, (Nil: List[A], Nil: List[B]))(f)
-  }
+    def takeWhileR[A](lst: List[A])(p: A => Boolean): List[A] = foldRight(lst, Nil: List[A])((x, y) => if (p(x)) Const(x, y) else Nil)
 
-  def lengthL[A](lst: List[A]): Int = foldLeft(lst, 0)((x, y) => 1 + x)
+    def dropWhileL[A](lst: List[A])(p: A => Boolean): List[A] = foldLeft(lst, (true: Boolean, Nil: List[A]))((x, y) => x match {
+      case (true, _) => if (p(y)) (true, x._2) else (false, addEndOther(x._2, y))
+      case (false, _) => if (p(y)) (false, addEndOther(x._2, y)) else (false, addEndOther(x._2, y))
+    })._2
 
-  def andL(lst: List[Boolean]): Boolean = foldLeft(lst, true)((x, y) => if (x && y) true else false)
+    def filterR[A](lst: List[A])(p: A => Boolean): List[A] = foldRight(lst, Nil: List[A])((x, y) => if (p(x)) Const(x, y) else y)
 
-  def takeWhileL[A](lst: List[A])(p: A => Boolean): List[A] = {
-    def f(b: (Boolean, List[A]), a: A): (Boolean, List[A]) = b match {
-      case (true, lst) => if (p(a)) (true, addEndOther(lst, a)) else (false, lst)
-      case (false, lst) => b
+    def unzipR[A, B](lst: List[(A, B)]): (List[A], List[B]) = foldRight(lst, (Nil: List[A], Nil: List[B]))((x, y) => (Const(x._1, y._1), Const(x._2, y._2)))
+
+    // Function zip with f defined
+    def unzipOther[A, B](lst: List[(A, B)]): (List[A], List[B]) = {
+      def f(x: (A, B), y: (List[A], List[B])): (List[A], List[B]) = {
+        (Const(x._1, y._1), Const(x._2, y._2))
+      }
+
+      foldRight(lst, (Nil: List[A], Nil: List[B]))(f)
     }
 
-    foldLeft(lst, (true, Nil: List[A]))(f)._2
+    def lengthL[A](lst: List[A]): Int = foldLeft(lst, 0)((x, y) => 1 + x)
+
+    def andL(lst: List[Boolean]): Boolean = foldLeft(lst, true)((x, y) => if (x && y) true else false)
+
+    def takeWhileL[A](lst: List[A])(p: A => Boolean): List[A] = {
+      def f(b: (Boolean, List[A]), a: A): (Boolean, List[A]) = b match {
+        case (true, lst) => if (p(a)) (true, addEndOther(lst, a)) else (false, lst)
+        case (false, lst) => b
+      }
+
+      foldLeft(lst, (true, Nil: List[A]))(f)._2
+    }
+
+    def filterL[A](lst: List[A])(p: A => Boolean): List[A] = foldLeft(lst, Nil: List[A])((x, y) => if (p(y)) addEndOther(x, y) else x)
+
+    def unzipL[A, B](lst: List[(A, B)]): (List[A], List[B]) = foldLeft(lst, (Nil: List[A], Nil: List[B]))((x, y) => (addEndOther(x._1, y._1), addEndOther(x._2, y._2)))
+
   }
-
-  def filterL[A](lst: List[A])(p: A => Boolean): List[A] = foldLeft(lst, Nil: List[A])((x, y) => if (p(y)) addEndOther(x, y) else x)
-
-  def unzipL[A, B](lst: List[(A, B)]): (List[A], List[B]) = foldLeft(lst, (Nil: List[A], Nil: List[B]))((x, y) => (addEndOther(x._1, y._1), addEndOther(x._2, y._2)))
-
 }

@@ -3,7 +3,7 @@ package co.s4n.director
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class director extends AnyFlatSpec with Matchers{
+class directorSpec extends AnyFlatSpec with Matchers{
   "Direcrtor mayot" should "Juan" in {
     Director.esMayor(Director("Juan","Camilo",30), Director("Laura","Vanessa",20)) shouldEqual "Juan"  }
     val pelicula1 = Pelicula("harry",2,5,new Director("Laura","Carmona",20))

@@ -37,10 +37,6 @@ object Lista {
     case List(a) => a
     case lst => lastF(lst.splitAt(lst.length - 1)._2)
   }
-  def lastF2[A](lst:List[A]):A = lst match {
-    case x :: Nil => x
-    case _::xs => lastF2(xs)
-  }
   def lastF2[A](lst:List[A]):A = {
     def lastF2Aux[A](n:Int,lst:List[A]):A = (n,lst) match {
       case (2,x::xs) => x
@@ -94,13 +90,7 @@ object Lista {
     }
     dupliAux(lst,Nil)
   }
-  /*def repli[A](n:Int,lst:List[A]):List[A] =  {
-      def repliAux[A](n:Int,lst:List[A], acum:List[A]):List[A] = (n,lst) match {
-        case
-        case (0,x::xs) => repli(n,xs,)
-        case (n,x::xs) =>
-      }
-}*/
+
   sealed trait Valores[+A]
   case class Multiple[A](veces:Int,unA:A) extends Valores[A]
   case class Unico[A](unA:A) extends Valores[A]
@@ -109,4 +99,4 @@ object Lista {
     case Unico(a) => Unico(a)
     case Multiple(veces,unA) => ???
 
-}
+}}
